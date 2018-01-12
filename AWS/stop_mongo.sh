@@ -9,6 +9,6 @@ fi
 source $mongo_env_script
 
 # Stop instances
-aws ec2 stop-instances --instance-ids $MONGO_CONFIGRS_INSTANCE_ID $MONGO_RS0_INSTANCE_ID $MONGO_RS1_INSTANCE_ID $MONGO_CONFIGRS_INSTANCE_ID
+aws ec2 stop-instances --instance-ids $MONGO_CONFIGRS_INSTANCE_ID $MONGO_RS0_INSTANCE_ID $MONGO_RS1_INSTANCE_ID $MONGO_ROUTER_INSTANCE_ID
 
 echo "Intances stopping..."
