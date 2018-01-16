@@ -44,6 +44,7 @@ sudo mkfs.xfs /dev/xvdb1
 Monter la partition automatiquement
 ```
 sudo mkdir /mnt/mongo_data
+sudo mkdir /mnt/mongo_data/mongo
 sudo vim /etc/fstab
 ```
 
@@ -150,3 +151,58 @@ Lancer le script start_mongo.sh
 
 ## Arrêt des serveurs
 Lancer le script stop_mongo.sh
+
+## Créer une collection shardée
+Activer le sharding sur le schéma :
+```
+sh.enableSharding( "test_CNG" )
+```
+
+Créer un index et sharder la collection
+```
+use test_CNG;
+db.test1.createIndex({GlobalEventID:"hashed"});
+sh.shardCollection("test_CNG.test1",{GlobalEventID:"hashed"});
+```
+
+# Connection Spark-MongoDB
+https://stackoverflow.com/questions/38872049/spark-dataframe-to-mongodb-document-insertion-issue
+
+https://github.com/manuparra/starting-bigdata-aws#connecting-to-mongodb-from-spark
+
+Example enron emails
+
+https://github.com/mongodb/mongo-hadoop/wiki/Enron-Emails-Example
+
+Doc Mongo d'écriture de Dataframe dans MOngo depuis Spark : https://docs.mongodb.com/spark-connector/current/scala/datasets-and-sql/
+
+DOc mongo de conf : https://docs.mongodb.com/spark-connector/current/scala-api/
+
+
+
+# S3
+s3://gdelt-sources/
+
+# spark
+```
+spark-shell --packages org.mongodb.spark:mongo-spark-connector_2.11:2.2.0 --conf "spark.mongodb.input.uri=mongodb://ec2-52-73-183-155.compute-1.amazonaws.com/test_CNG.test1?readPreference=primaryPreferred" --conf "spark.mongodb.output.uri=mongodb://ec2-52-73-183-155.compute-1.amazonaws.com/test_CNG.test1"
+```
+```
+spark-submit --deploy-mode cluster --master yarn --num-executors 3 --executor-cores 2 --executor-memory 2g --class com.sparkProject.DataImport /tmp/spark-data-import-assembly-1.0.jar
+```
+
+
+```
+aws emr add-steps --cluster-id j-34G5YT4JRYK5O --steps Type=spark,Name=SparkWordCountApp,Args=[--deploy-mode,cluster,--master,yarn,--conf,spark.yarn.submit.waitAppCompletion=false,--num-executors,3,--executor-cores,3,--executor-memory,2g,--class,com.sparkProject.DataImport,/tmp/spark-data-import-assembly-1.0.jar],ActionOnFailure=CONTINUE
+```
+
+# EMR
+## Création et lancement d'une copie dans HDFS
+```
+aws emr create-cluster --applications Name=Ganglia Name=Spark --ec2-attributes '{"KeyName":"gdeltKeyPair","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-4087c224","EmrManagedSlaveSecurityGroup":"sg-dc1817a9","EmrManagedMasterSecurityGroup":"sg-1e2d226b"}' --service-role EMR_DefaultRole --enable-debugging --release-label emr-5.11.0 --log-uri 's3n://aws-logs-373738665477-us-east-1/elasticmapreduce/' --name 'Mon cluster2' --instance-groups '[{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"m1.large","Name":"Master Instance Group"},{"InstanceCount":2,"InstanceGroupType":"CORE","InstanceType":"m1.large","Name":"Core Instance Group"}]' --configurations '[{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"},"Configurations":[]}]' --region us-east-1 --steps Type=CUSTOM_JAR,Name="S3DistCp step",ActionOnFailure=CONTINUE,"Jar":"command-runner.jar",Args=["s3-dist-cp","--s3Endpoint=s3.amazonaws.com","--src=s3://gdelt-sources/","--dest=hdfs:///events","--srcPattern=20170125[0-9]*.export.CSV.zip"]
+```
+
+```
+aws emr create-cluster --name "Spark cluster with Ganglia" --release-label emr-5.11.0 \
+--applications Name=Spark Name=Ganglia --ec2-attributes KeyName=myKey --instance-type m3.xlarge --instance-count 3 --use-default-roles
+```
