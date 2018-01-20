@@ -4,22 +4,17 @@
 <head>
   <meta <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
   <title>GDELT form</title>
-  <style>
-    body {
-      font-family: 'Helvetica Neue', Helvetica, sans-serif;
-    }
-  </style>
 </head>
 
 <body>
   <div style="text-align: center;">
       <h1>Assessing the media's tone in covering Trump's Government</h1>
   </div>
-  <p>Quelle période ?</p>
-  <form action="index.html" method="GET">
-    <input type="text" placeholder="De :" name="DateStart">
-    <input type="text" placeholder="A :" name="DateEnd">
-    <input type="submit" value="Valider">
+  <p>Please fill the form below : </p>
+  <form action="index.html" method="GET" onsubmit="this.submit(); this.reset(); return false;">
+    <input type="text" placeholder="From :" name="DateStart">
+    <input type="text" placeholder="To :" name="DateEnd">
+    <input type="submit" value="Submit">
   </form>
 
 </body>

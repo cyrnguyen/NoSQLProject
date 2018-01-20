@@ -40,10 +40,6 @@
 
 <body>
   <script src="http://d3js.org/d3.v4.min.js"></script>
-  <script src="https://d3js.org/d3-collection.v1.min.js"></script>
-  <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
-  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
-  <script src="https://d3js.org/d3-request.v1.min.js"></script>
   <script src="https://d3js.org/d3-queue.v3.min.js"></script>
   <script src="https://d3js.org/topojson.v2.min.js"></script>
   <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
@@ -116,7 +112,7 @@
         .attr("id", "date");
 
       let utcDate = utcParser(DateStart).toDateString();
-      d3.select("body").insert("h4", ":first-child").text(utcDate);
+      d3.select("body").insert("h4", ":first-child").text("date : " + utcDate);
 
       // init legend container
       svg_map.append("g")
