@@ -48,8 +48,6 @@
   <script src="https://d3js.org/topojson.v2.min.js"></script>
   <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
   <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
-  <script src="https://d3js.org/d3-time.v1.min.js"></script>
-  <script src="https://d3js.org/d3-time-format.v2.min.js"></script>
   <script src="functions.js"></script>
 
   <div style="text-align: center;">
@@ -118,7 +116,7 @@
         .attr("id", "date");
 
       let utcDate = utcParser(DateStart).toDateString();
-      d3.select("body").insert("h4", ":first-child").text("date: " + utcDate);
+      d3.select("body").insert("h4", ":first-child").text(utcDate);
 
       // init legend container
       svg_map.append("g")
