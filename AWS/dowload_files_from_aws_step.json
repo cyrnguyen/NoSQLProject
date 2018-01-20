@@ -1,0 +1,9 @@
+[
+    {
+        "Name":"S3DistCp step",
+        "Args":["s3-dist-cp","--src=s3://gdelt-sources/","--dest=hdfs:///events","--srcPattern=20170125[0-9]*.export.CSV.zip"],
+        "ActionOnFailure":"CONTINUE",
+        "Type":"CUSTOM_JAR",
+        "Jar":"command-runner.jar"
+    }
+]
