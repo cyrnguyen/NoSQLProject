@@ -63,7 +63,7 @@ Autres possibilités de filtres :
 -	Grouper les mentions par **DomainCountryCode**
 -	Compter les mentions, moyenner leur **MentionDocTone** pour chaque **DomainCountryCode**.
 
-### Évolution de la perception dans le monde
+### Évolution de la perception d'un pays
 ```
 GetCountryMovingOpinion(CountryCode, DateStart, DateEnd)  
 Returns: 3-column array [Date, NumberOfMentions, AvgDocTone]
