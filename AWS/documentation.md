@@ -139,7 +139,7 @@ Lancer le script stop_mongo.sh
 ## Créer une collection shardée
 Activer le sharding sur le schéma :
 ```
-sh.enableSharding( "test_CNG" )
+sh.enableSharding( "year" )
 ```
 
 Créer des index et sharder les collections
