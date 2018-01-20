@@ -27,7 +27,7 @@ function updateMap(color, data) {
 
   // update headline
   let utcDate = utcParser(d3.select("#date").node().value).toDateString();
-  d3.select("h4").text("date: " + utcDate);
+  d3.select("h4").text(utcDate);
 }
 
 function renderLegend(color, data) {
