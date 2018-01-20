@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+  <title>GDELT graph</title>
+  <style>
+
+    svg {
+      display: block;
+      margin: 0 auto;
+    }
+
+    p {
+      font-size: 10pt;
+      margin-left: 20px;
+    }
+
+    .countries {
+      stroke: #fff;
+    }
+
+    .legend rect {
+      stroke: #000;
+    }
+
+    .legend,
+    .legend_title text {
+      font-family: 'Helvetica Neue', Helvetica, sans-serif;
+      font-size: 10pt;
+    }
+
+    .barlabel {
+      font-family: 'Helvetica Neue', Helvetica, sans-serif;
+      font-size: 8pt;
+      text-anchor: middle;
+    }
+  </style>
+</head>
+
+<body>
+  <script src="http://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+  <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
+  <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+  <script src="https://d3js.org/d3-request.v1.min.js"></script>
+  <script src="https://d3js.org/d3-queue.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+  <script src="https://d3js.org/d3-geo-projection.v1.min.js"></script>
+  <script src="https://d3js.org/d3-time.v1.min.js"></script>
+  <script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+  <script src="functions.js"></script>
+
+  <div style="text-align: center;">
+      <h1>Assessing the media's tone in covering Trump's Government</h1>
+  </div>
+
+  <script>
+
+    /// params
+
+    // get values from the form
+    var parameters = location.search.substring(1).split("&");
+    var DateStart = parameters[0].split("=")[1];
+    var DateEnd = parameters[1].split("=")[1];
+    // only works if array.length-1 is between 3 and 9 (d3 color scheme)
+    var quantiles = [0, 0.2, 0.4, 0.6, 0.8, 1];
+    // init color
+    var color_na = d3.rgb("#d4d4d4");
+    // init map container, projection
+    var width = 960,
+      height = 425;
+    var svg_map = d3.select("body").insert("svg")
+      .attr("id", "map")
+      .attr("height", height)
+      .attr("width", width);
+    var path = d3.geoPath(d3.geoRobinson());
+    // init bars container
+    var margin = {
+      top: 50,
+      right: 10,
+      bottom: 50,
+      left: 30
+    };
+    var svgBarsWidth = 960 - margin.left - margin.right,
+      svgBarsHeight = 200 - margin.top - margin.bottom;
+    var x = d3.scaleBand()
+      .rangeRound([0, svgBarsWidth])
+      .padding(.05);
+    var y = d3.scaleLinear().range([svgBarsHeight, 0]);
+    var svg_bars = d3.select("body")
+      .append("svg")
+      .attr("id", "bars")
+      .attr("width", svgBarsWidth + margin.left + margin.right)
+      .attr("height", svgBarsHeight + margin.top + margin.bottom)
+      .append("g")
+      .attr("class", "bars")
+      .attr("transform", "translate(" + margin.left + ", " + margin.top + ")");
+
+    // UTC timestamp parser
+
+    var utcParser = d3.utcParse("%Y%m%d");
+
+    /// wait for json
+
+    d3.queue(2)
+      .defer(d3.json, "sample.json")
+      .awaitAll(ready);
+
+    function ready(error, results) {
+      if (error) throw error;
+      // slider
+      d3.select("body").insert("p", ":first-child").append("input")
+        .attr("type", "range")
+        .attr("min", DateStart)
+        .attr("max", DateEnd)
+        .attr("id", "date");
+
+      let utcDate = utcParser(DateStart).toDateString();
+      d3.select("body").insert("h4", ":first-child").text("date: " + utcDate);
+
+      // init legend container
+      svg_map.append("g")
+        .attr("class", "legend");
+      svg_map.append("g")
+        .attr("class", "legend_title")
+        .append("text");
+
+      // load data
+      d3.json("sample.json", function(error, d) {
+
+        if (error) throw error;
+
+        let data = d["Tone"][DateStart];
+        let color = calcColorScale(data);
+
+        // load map data and render it
+        d3.json("world.json", function(error, worldmap) {
+          if (error) throw error;
+
+          // init map
+          svg_map.append("g")
+            .attr("class", "countries")
+            .selectAll("path")
+            .data(topojson.feature(worldmap, worldmap.objects.world).features)
+            .enter().append("path")
+            .attr("d", path)
+            .attr("id", function(d) {
+              return d.id;
+            })
+            .call(fillMap, color, data)
+            .append("title")
+            .call(setPathTitle, data);
+
+          // init legend
+          renderLegend(color, d["Count"][DateStart]);
+          renderBars(d["Count"][DateStart]);
+        }); // map data
+
+        // was the slider used?
+        d3.select("#date").on("input", function() {
+          let upd_color = calcColorScale(d["Tone"][this.value]);
+          updateMap(upd_color, d["Tone"][this.value]);
+          renderLegend(upd_color, d["Tone"][this.value]);
+          renderBars(d["Count"][this.value]);
+        });
+
+      });
+    }
+  </script>
+
+</body>
+
+</html>
