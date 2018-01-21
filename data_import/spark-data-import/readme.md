@@ -46,12 +46,12 @@ Lancement via spark-submit :
 
 * Chargement des events
 ```
-spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadEvents /path/to/spark-data-import-assembly-1.0.jar
+spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadEvents /path/to/spark-data-import-assembly-1.0.jar files_format schema_name
 ```
 
 * Chargement des mentions
 ```
-spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadMentions /path/to/spark-data-import-assembly-1.0.jar
+spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadMentions /path/to/spark-data-import-assembly-1.0.jar files_format schema_name
 ```
 
 Lancement sur un cluster AWS EMR :
