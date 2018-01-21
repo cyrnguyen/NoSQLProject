@@ -202,6 +202,11 @@ noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=Loa
 noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadMentions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadMentions,s3://gdelt-spark/spark-data-import-assembly-1.2.jar,20171*,ActionOnFailure=CONTINUE
 ```
 
+Lancement de la création de la table opinions
+```
+noglob aws emr add-steps --cluster-id j-3EYKAI9LQ6E84 --steps Type=spark,Name=ComputeOpinions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.ComputeOpinions,s3://gdelt-spark/compute-opinions-assembly-1.0.jar,endofyear,ActionOnFailure=CONTINUE
+```
+
 # Cassandra on AWS (pas mis en oeuvre au final)
 ## Ressources
 * [White paper AWS](https://d0.awsstatic.com/whitepapers/Cassandra_on_AWS.pdf)
