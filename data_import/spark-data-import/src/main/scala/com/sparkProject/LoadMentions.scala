@@ -23,7 +23,12 @@ object LoadMentions {
     var schema = "year"
     if (args.length > 1)
       schema = args(1)
-    val mongoOutputUri = "mongodb://ip-172-31-8-31.ec2.internal/" + schema + ".test2"
+
+    var mongoHost = "ip-172-31-8-31.ec2.internal"
+    if (args.length > 2)
+      mongoHost = args(2)
+
+    val mongoOutputUri = "mongodb://" + mongoHost + "/" + schema + ".test2"
 
     val conf = new SparkConf().setAll(Map(
       "spark.scheduler.mode" -> "FIFO",

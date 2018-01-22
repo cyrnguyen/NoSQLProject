@@ -15,8 +15,13 @@ object ComputeOpinions {
     var schema = "endofyear"
     if (args.length > 0)
       schema = args(0)
-    val mongoInputUri = "mongodb://ip-172-31-8-31.ec2.internal/" + schema + ".events?readPreference=primaryPreferred"
-    val mongoOutputUri = "mongodb://ip-172-31-8-31.ec2.internal/" + schema + ".opinions"
+
+    var mongoHost = "ip-172-31-8-31.ec2.internal"
+    if (args.length > 1)
+      mongoHost = args(1)
+
+    val mongoInputUri = "mongodb://" + mongoHost + "/" + schema + ".events?readPreference=nearest"
+    val mongoOutputUri = "mongodb://" + mongoHost + "/" + schema + ".opinions"
 
     val conf = new SparkConf().setAll(Map(
       "spark.scheduler.mode" -> "FIFO",
@@ -38,7 +43,7 @@ object ComputeOpinions {
     import spark.implicits._
 
     val events = MongoSpark.load(spark)
-    val mentionsUri = "mongodb://ip-172-31-8-31.ec2.internal/" + schema + ".mentions?readPreference=primaryPreferred"
+    val mentionsUri = "mongodb://" + mongoHost + "/" + schema + ".mentions?readPreference=nearest"
     val mentions = spark.sparkContext.
       loadFromMongoDB(ReadConfig(Map("uri" -> mentionsUri))).
       toDF()

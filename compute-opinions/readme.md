@@ -17,6 +17,7 @@ sbt assembly
 Cette application prend les arguments suivants :
 
 * le nom du schema où récupérer et insérer les données
+* le nom de l'hôte du router Mongo
 
 
 Lancement via spark-submit :

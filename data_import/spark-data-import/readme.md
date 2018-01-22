@@ -40,6 +40,7 @@ Cette application prend les arguments suivants :
     * "2017*"" pour prendre tous les fichiers de 2017
     * "20170125*" pour prendre tous les fichiers du 25/01/2017
 * le nom du schema où insérer les données
+* le nom de l'hôte du router Mongo
 
 
 Lancement via spark-submit :
