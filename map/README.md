@@ -4,3 +4,7 @@
 `world.json` : référentiel de coordonnées des pays du monde.  
 
 Source : http://bl.ocks.org/tomschulze/961d57bd1bbd2a9ef993f2e8645cb8d2#index.html
+
+1. Ouvrir le fichier `index_form.html` dans un navigateur web.
+2. Renseigner les champs du formulaire.
+3. Curseur dynamique de l'axe temporel.
