@@ -1,3 +1,7 @@
+# Visualisation des données (D3js)
+
+Inventaire :  
+
 `index_form.html` : formulaire de sélection des dates de début et de fin de période d'analyse.  
 `index.html` : graphique D3js  
 `functions.js` : librairie de fonctions javascript  
@@ -5,6 +9,7 @@
 
 Source : http://bl.ocks.org/tomschulze/961d57bd1bbd2a9ef993f2e8645cb8d2#index.html
 
+Mode d'emploi :  
 1. Ouvrir le fichier `index_form.html` dans un navigateur web.
 2. Renseigner les champs du formulaire.
 3. Curseur dynamique de l'axe temporel.
