@@ -8,6 +8,7 @@ Source : http://bl.ocks.org/tomschulze/961d57bd1bbd2a9ef993f2e8645cb8d2#index.ht
 `world.json` : référentiel de coordonnées des pays du monde.  
 
 ## Mode d'emploi :  
+`WARNING` : Installer et activer un module complémentaire du navigateur web (ex. : CORS Everywhere / Mozilla), permettant d'outrepasser les restrictions CORS.
 1. Ouvrir le fichier `index_form.html` dans un navigateur web.
 2. Renseigner les champs du formulaire par des dates au format `YYYYMMDD`.
 3. Curseur dynamique de l'axe temporel.
