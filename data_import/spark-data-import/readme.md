@@ -40,18 +40,19 @@ Cette application prend les arguments suivants :
     * "2017*"" pour prendre tous les fichiers de 2017
     * "20170125*" pour prendre tous les fichiers du 25/01/2017
 * le nom du schema où insérer les données
+* le nom de l'hôte du router Mongo
 
 
 Lancement via spark-submit :
 
 * Chargement des events
 ```
-spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadEvents /path/to/spark-data-import-assembly-1.0.jar
+spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadEvents /path/to/spark-data-import-assembly-1.0.jar files_format schema_name
 ```
 
 * Chargement des mentions
 ```
-spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadMentions /path/to/spark-data-import-assembly-1.0.jar
+spark-submit --deploy-mode cluster --master yarn --class com.sparkProject.LoadMentions /path/to/spark-data-import-assembly-1.0.jar files_format schema_name
 ```
 
 Lancement sur un cluster AWS EMR :

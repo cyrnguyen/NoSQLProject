@@ -94,7 +94,21 @@ rs.initiate( {
    _id: "configRs",
    configsvr: true,
    members: [
-      { _id: 0, host: "ip-172-31-12-94.ec2.internal:27019" }
+      { _id: 0, host: "ip-172-31-12-94.ec2.internal:27017" }
+   ]
+} )
+```
+
+#### Avec réplication
+```
+mongo xxx:27017
+rs.initiate( {
+   _id: "configRs",
+   configsvr: true,
+   members: [
+      { _id: 0, host: "ip-172-31-34-137.ec2.internal:27017" },
+      { _id: 1, host: "ip-172-31-38-129.ec2.internal:27017" },
+      { _id: 2, host: "ip-172-31-43-31.ec2.internal:27017" }
    ]
 } )
 ```
@@ -118,11 +132,49 @@ rs.initiate( {
 })
 ```
 
+#### Avec réplication
+```
+mongo xxx:27017
+rs.initiate( {
+   _id : "rs0",
+   members: [
+      { _id : 0, host : "ip-172-31-35-85.ec2.internal:27017" },
+      { _id : 1, host : "ip-172-31-40-70.ec2.internal:27017" },
+      { _id : 2, host : "ip-172-31-42-213.ec2.internal:27017" }
+    ]
+})
+```
+
+```
+mongo xxx:27017
+rs.initiate( {
+   _id : "rs1",
+   members: [
+      { _id : 0, host : "ip-172-31-37-210.ec2.internal:27017" },
+      { _id : 1, host : "ip-172-31-42-40.ec2.internal:27017" },
+      { _id : 2, host : "ip-172-31-44-187.ec2.internal:27017" }
+    ]
+})
+```
+
+```
+mongo xxx:27017
+rs.initiate( {
+   _id : "rs2",
+   members: [
+      { _id : 0, host : "ip-172-31-36-7.ec2.internal:27017" },
+      { _id : 1, host : "ip-172-31-45-88.ec2.internal:27017" },
+      { _id : 2, host : "ip-172-31-46-201.ec2.internal:27017" }
+    ]
+})
+```
+
 ## Déclaration des shards dans mongos
 ```
 mongo yyy:27017
-sh.addShard( "rs0/ip-172-31-14-153.ec2.internal:27017")
-sh.addShard( "rs1/ip-172-31-7-24.ec2.internal:27017")
+sh.addShard( "rs0/ip-172-31-35-85.ec2.internal:27017,ip-172-31-40-70.ec2.internal:27017,ip-172-31-42-213.ec2.internal:27017")
+sh.addShard( "rs1/ip-172-31-37-210.ec2.internal:27017,ip-172-31-42-40.ec2.internal:27017,ip-172-31-44-187.ec2.internal:27017")
+sh.addShard( "rs2/ip-172-31-36-7.ec2.internal:27017,ip-172-31-45-88.ec2.internal:27017,ip-172-31-46-201.ec2.internal:27017")
 ```
 
 ## Lancement des serveurs
@@ -139,16 +191,20 @@ Lancer le script stop_mongo.sh
 ## Créer une collection shardée
 Activer le sharding sur le schéma :
 ```
-sh.enableSharding( "test_CNG" )
+sh.enableSharding( "year" )
 ```
 
 Créer des index et sharder les collections
 ```
-use test_CNG;
+use year;
 db.events.createIndex({GlobalEventID:"hashed"});
 sh.shardCollection("year.events",{GlobalEventID:"hashed"});
 db.mentions.createIndex({MentionDate:"hashed"});
+db.mentions.createIndex({MentionDate:1});
 sh.shardCollection("year.mentions",{MentionDate:"hashed"});
+db.opinions.createIndex({day:"hashed"});
+db.opinions.createIndex({day:1});
+sh.shardCollection("year.opinions",{day:"hashed"});
 ```
 
 
@@ -164,16 +220,31 @@ spark-shell --packages org.mongodb.spark:mongo-spark-connector_2.11:2.2.0,org.ap
 ## Utilisation de AWS EMR
 ### Création d'un EMR
 Cette ligne de commande lance un Cluster avec les caractéristiques suivantes :
+
 * Applications
     * Spark
     * Hadoop
     * Ganglia (pour la supervision)
 * Infrastructure
     * 1 maître sur une instance m1.large
-    * 1 esclave sur une instance m1.large
+    * 2 esclave sur une instance m1.large
 
 ```
 aws emr create-cluster --applications Name=Ganglia Name=Spark Name=Hadoop --ec2-attributes '{"KeyName":"gdeltKeyPair","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-4087c224","EmrManagedSlaveSecurityGroup":"sg-dc1817a9","EmrManagedMasterSecurityGroup":"sg-1e2d226b"}' --service-role EMR_DefaultRole --enable-debugging --release-label emr-5.11.0 --log-uri 's3n://aws-logs-373738665477-us-east-1/elasticmapreduce/' --name 'Mon cluster2' --instance-groups '[{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"m1.large","Name":"Master Instance Group"},{"InstanceCount":2,"InstanceGroupType":"CORE","InstanceType":"m1.large","Name":"Core Instance Group"}]' --configurations '[{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"},"Configurations":[]}]' --region us-east-1
+```
+
+Cette ligne de commande lance un Cluster avec les caractéristiques suivantes :
+
+* Applications
+    * Spark
+    * Hadoop
+    * Ganglia (pour la supervision)
+* Infrastructure
+    * 1 maître sur une instance m1.large
+    * 4 esclave sur une instance m1.large
+
+```
+aws emr create-cluster --applications Name=Ganglia Name=Spark Name=Hadoop --ec2-attributes '{"KeyName":"gdeltKeyPair","InstanceProfile":"EMR_EC2_DefaultRole","SubnetId":"subnet-9842f1c5","EmrManagedSlaveSecurityGroup":"sg-dc1817a9","EmrManagedMasterSecurityGroup":"sg-1e2d226b"}' --service-role EMR_DefaultRole --enable-debugging --release-label emr-5.11.0 --log-uri 's3n://aws-logs-373738665477-us-east-1/elasticmapreduce/' --name 'Mon cluster3' --instance-groups '[{"InstanceCount":1,"InstanceGroupType":"MASTER","InstanceType":"m1.large","Name":"Master Instance Group"},{"InstanceCount":4,"InstanceGroupType":"CORE","InstanceType":"m1.large","Name":"Core Instance Group"}]' --configurations '[{"Classification":"spark","Properties":{"maximizeResourceAllocation":"true"},"Configurations":[]}]' --region us-east-1
 ```
 
 Mise à jour du nombre max de fichiers ouverts sur chaque serveur :
@@ -184,22 +255,25 @@ cat /proc/sys/fs/file-max
 ```
 Finalement, cette solution n'a pas été mise en oeuvre, au profit d'un lotissement du chargement des données
 
+### Upload d'un jar (contenant un job Spark) sur AWS
+```
+aws s3 cp monjar.jar s3://mon_bucket/monjar.jar
+```
+
 ### Lancement des jobs
 Lancement du chargement des évents
 ```
-noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadEvents,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadEvents,s3://gdelt-spark/spark-data-import-assembly-1.2.jar,20170*,ActionOnFailure=CONTINUE
+noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadEvents,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadEvents,s3://gdelt-spark/spark-data-import-assembly-1.6.jar,2017*,year,ip-172-31-41-137.ec2.internal,ActionOnFailure=CONTINUE
 ```
-```
-noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadEvents,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadEvents,s3://gdelt-spark/spark-data-import-assembly-1.2.jar,20171*,ActionOnFailure=CONTINUE
-```
-
 
 Lancement du chargement des mentions
 ```
-noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadMentions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadMentions,s3://gdelt-spark/spark-data-import-assembly-1.2.jar,20170*,ActionOnFailure=CONTINUE
+noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadMentions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadMentions,s3://gdelt-spark/spark-data-import-assembly-1.6.jar,2017*,year,ip-172-31-41-137.ec2.internal,ActionOnFailure=CONTINUE
 ```
+
+Lancement de la création de la table opinions
 ```
-noglob aws emr add-steps --cluster-id j-O0YI5DXB2YBX --steps Type=spark,Name=LoadMentions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.LoadMentions,s3://gdelt-spark/spark-data-import-assembly-1.2.jar,20171*,ActionOnFailure=CONTINUE
+noglob aws emr add-steps --cluster-id j-3EYKAI9LQ6E84 --steps Type=spark,Name=ComputeOpinions,Args=--deploy-mode,cluster,--master,yarn,--class,com.sparkProject.ComputeOpinions,s3://gdelt-spark/compute-opinions-assembly-1.1.jar,year,ip-172-31-41-137.ec2.internal,ActionOnFailure=CONTINUE
 ```
 
 # Cassandra on AWS (pas mis en oeuvre au final)

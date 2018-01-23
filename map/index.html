@@ -5,7 +5,6 @@
   <meta <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
   <title>GDELT graph</title>
   <style>
-
     svg {
       display: block;
       margin: 0 auto;
@@ -47,11 +46,10 @@
   <script src="functions.js"></script>
 
   <div style="text-align: center;">
-      <h1>Assessing the media's tone in covering Trump's Government</h1>
+    <h1>Assessing the media's tone in covering Trump's Government</h1>
   </div>
 
   <script>
-
     /// params
 
     // get values from the form
@@ -96,15 +94,12 @@
 
     var utcParser = d3.utcParse("%Y%m%d");
 
-    /// wait for json
+    /// API request
 
-    d3.queue(2)
-      .defer(d3.json, "sample.json")
-      .awaitAll(ready);
+    var url = 'http://flask-env5.5vpktwj7am.us-east-1.elasticbeanstalk.com/result2';
 
-    function ready(error, results) {
-      if (error) throw error;
-      // slider
+    d3.json(url + '?start=' + DateStart + '&end=' + DateEnd, function(error, json) {
+      if (error) return console.warn(error);
       d3.select("body").insert("p", ":first-child").append("input")
         .attr("type", "range")
         .attr("min", DateStart)
@@ -122,46 +117,39 @@
         .append("text");
 
       // load data
-      d3.json("sample.json", function(error, d) {
+      let data = json["Tone"][DateStart];
+      let color = calcColorScale(data);
 
+      // load map data and render it
+      d3.json("world.json", function(error, worldmap) {
         if (error) throw error;
 
-        let data = d["Tone"][DateStart];
-        let color = calcColorScale(data);
+        // init map
+        svg_map.append("g")
+          .attr("class", "countries")
+          .selectAll("path")
+          .data(topojson.feature(worldmap, worldmap.objects.world).features)
+          .enter().append("path")
+          .attr("d", path)
+          .attr("id", function(d) {
+            return d.id;
+          })
+          .call(fillMap, color, data)
+          .append("title")
+          .call(setPathTitle, data);
 
-        // load map data and render it
-        d3.json("world.json", function(error, worldmap) {
-          if (error) throw error;
+        // init legend
+        renderLegend(color, json["Frequency"][DateStart]);
+        renderBars(json["Frequency"][DateStart]);
+      }); // map data
 
-          // init map
-          svg_map.append("g")
-            .attr("class", "countries")
-            .selectAll("path")
-            .data(topojson.feature(worldmap, worldmap.objects.world).features)
-            .enter().append("path")
-            .attr("d", path)
-            .attr("id", function(d) {
-              return d.id;
-            })
-            .call(fillMap, color, data)
-            .append("title")
-            .call(setPathTitle, data);
-
-          // init legend
-          renderLegend(color, d["Count"][DateStart]);
-          renderBars(d["Count"][DateStart]);
-        }); // map data
-
-        // was the slider used?
-        d3.select("#date").on("input", function() {
-          let upd_color = calcColorScale(d["Tone"][this.value]);
-          updateMap(upd_color, d["Tone"][this.value]);
-          renderLegend(upd_color, d["Tone"][this.value]);
-          renderBars(d["Count"][this.value]);
-        });
-
-      });
-    }
+      // was the slider used?
+      d3.select("#date").on("input", function() {
+        let upd_color = calcColorScale(json["Tone"][this.value]);
+        updateMap(upd_color, json["Tone"][this.value]);
+        renderLegend(upd_color, json["Tone"][this.value]);
+        renderBars(json["Frequency"][this.value]); });
+    });
   </script>
 
 </body>
